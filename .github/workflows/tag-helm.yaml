@@ -48,7 +48,7 @@ jobs:
           NEW_TAG="helm/v${VERSION}"
           echo "New tag: $NEW_TAG"
           echo "new-raw=${VERSION}" >> $GITHUB_OUTPUT
-          echo "new-tag=${NEXT_TAG}" >> $GITHUB_OUTPUT
+          echo "new-tag=${NEW_TAG}" >> $GITHUB_OUTPUT
 
       - name: Commit and push helm changes
         run: |
