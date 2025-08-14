@@ -1,24 +1,64 @@
 name: Release helm chart
+run-name: Release helm chart (${{ inputs.strategy }})
 
 on:
-  push:
-    tags:
-      - helm/v*.*.*
-    branches-ignore:
-      - '**'
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: Helm chart name
+        type: choice
+        default: test
+        options:
+          - test
+      strategy:
+        description: Semver release strategy
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
 
   workflow_call:
     inputs:
-      ref_name:
-        description: Git ref to checkout (tag or branch)
+      chart:
+        description: Helm chart name
         type: string
-        required: false
+        default: test
+        required: true
+      strategy:
+        description: Semver release strategy
+        type: string
+        required: true
 
 env:
   REGISTRY_USER: motoki317
-  CHART: test
 
 jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update helm Chart.yaml
+        run: |
+          cd charts
+          ./bump.sh ${{ inputs.chart }} ${{ github.event.inputs.strategy }}
+          cd ..
+
+      - name: Commit and push helm changes
+        run: |
+          git add charts/${{ inputs.chart }}/Chart.yaml
+          git commit -m "Update charts/${{ inputs.chart }} to ${{ steps.calc-tag.outputs.new-raw }}"
+          git push
+
   release-helm:
     runs-on: ubuntu-latest
     steps:
@@ -35,4 +75,4 @@ jobs:
       - name: Publish chart
         run: |
           cd charts
-          ./publish.sh ${{ env.CHART }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts
+          ./publish.sh ${{ inputs.chart }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts
