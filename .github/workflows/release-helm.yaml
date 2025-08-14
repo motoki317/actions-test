@@ -35,12 +35,10 @@ env:
   REGISTRY_USER: motoki317
 
 jobs:
-  tag:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Git config
         run: |
@@ -58,13 +56,6 @@ jobs:
           git add charts/${{ inputs.chart }}/Chart.yaml
           git commit -m "Update charts/${{ inputs.chart }} to ${{ steps.calc-tag.outputs.new-raw }}"
           git push
-
-  release-helm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ inputs.ref_name || github.ref_name }}
 
       - uses: docker/login-action@v3
         with:
