@@ -8,7 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - run: pwd
       - run: echo "test" > test.txt
       - run: ls -lha
       - uses: actions/checkout@v5
+      - run: pwd
       - run: ls -lha
